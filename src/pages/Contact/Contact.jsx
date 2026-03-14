@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 const Contact = () => {
     return (
-        <section className="bg-base-100 dark:bg-gray-900 min-h-screen flex items-center justify-center py-20">
+        <section className="bg-base-100 min-h-screen flex items-center justify-center py-20">
             <div className="max-w-4xl w-full mx-auto px-6">
 
                 {/* Animated Heading */}
@@ -19,7 +19,7 @@ const Contact = () => {
 
                 {/* Contact Form */}
                 <motion.form
-                    className="bg-base-200 dark:bg-gray-800 rounded-xl shadow-lg p-8 flex flex-col gap-6"
+                    className="bg-base-200 rounded-xl shadow-lg p-8 flex flex-col gap-6"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 1, delay: 0.5 }}
@@ -29,7 +29,7 @@ const Contact = () => {
                         <input
                             type="text"
                             id="name"
-                            className="peer w-full border border-gray-300 dark:border-gray-600 rounded-md p-4 pt-10 text-gray-900 dark:text-gray-100 placeholder-transparent focus:outline-none focus:border-primary dark:focus:border-primary transition"
+                            className="peer w-full border border-gray-300 dark:border-gray-600 rounded-md p-4 pt-10  placeholder-transparent focus:outline-none focus:border-primary dark:focus:border-primary transition"
                             placeholder="Your Name"
                         />
                         <label
@@ -45,7 +45,7 @@ const Contact = () => {
                         <input
                             type="email"
                             id="email"
-                            className="peer w-full border border-gray-300 dark:border-gray-600 rounded-md p-4 pt-10 text-gray-900 dark:text-gray-100 placeholder-transparent focus:outline-none focus:border-primary dark:focus:border-primary transition"
+                            className="peer w-full border border-gray-300 dark:border-gray-600 rounded-md p-4 pt-10 placeholder-transparent focus:outline-none focus:border-primary dark:focus:border-primary transition"
                             placeholder="Your Email"
                         />
                         <label
@@ -61,7 +61,7 @@ const Contact = () => {
                         <textarea
                             id="message"
                             rows="5"
-                            className="peer w-full border border-gray-300 dark:border-gray-600 rounded-md p-4 pt-10 text-gray-900 dark:text-gray-100 placeholder-transparent focus:outline-none focus:border-primary dark:focus:border-primary transition resize-none"
+                            className="peer w-full border border-gray-300 dark:border-gray-600 rounded-md p-4 pt-10 placeholder-transparent focus:outline-none focus:border-primary dark:focus:border-primary transition resize-none"
                             placeholder="Your Message"
                         ></textarea>
                         <label
@@ -75,7 +75,7 @@ const Contact = () => {
                     {/* Submit Button */}
                     <motion.button
                         type="submit"
-                        className="btn btn-primary w-full py-4 text-lg font-semibold rounded-md hover:scale-105 transition-transform"
+                        className="btn btn-primary w-1/2 mx-auto py-4 text-lg font-semibold rounded-md hover:scale-105 transition-transform"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
