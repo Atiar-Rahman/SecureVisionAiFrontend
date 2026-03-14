@@ -6,6 +6,8 @@ import Register from '../pages/auth/Register';
 import SignIn from '../pages/auth/SignIn';
 import NotFound from '../pages/Error&loading/NotFound';
 import Contact from '../pages/Contact/Contact';
+import DashboardLayout from '../layouts/DashboardLayout';
+import WelCome from '../pages/dashboard/WelCome';
 
 const router = createBrowserRouter([
     {
@@ -30,7 +32,18 @@ const router = createBrowserRouter([
                 element:<SignIn/>
             }
         ]
-    }
+    },
+    {
+        path: 'dashboard',
+        element: <DashboardLayout/>,
+        errorElement: <NotFound/>,
+        children: [
+            {
+                path: '',
+                element: <WelCome/>
+            },
+        ]
+    },
 ])
 
 export default router;
