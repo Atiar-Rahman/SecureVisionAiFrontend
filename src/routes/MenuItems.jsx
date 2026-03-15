@@ -7,6 +7,36 @@ const MenuItems = () => {
     return (
         <div>
             <NavLink
+                to="/dashboard/profile"
+                className={({ isActive }) =>
+                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
+                    }`
+                }
+            >
+                <User size={18} />
+                Profile
+            </NavLink>
+            <NavLink
+                to="/dashboard/add-camera"
+                className={({ isActive }) =>
+                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
+                    }`
+                }
+            >
+                <User size={18} />
+                Add Camera
+            </NavLink>
+            <NavLink
+                to="/dashboard/camera-list"
+                className={({ isActive }) =>
+                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
+                    }`
+                }
+            >
+                <User size={18} />
+                Camera List
+            </NavLink>
+            <NavLink
                 to="/dashboard/detect"
                 className={({ isActive }) =>
                     `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""

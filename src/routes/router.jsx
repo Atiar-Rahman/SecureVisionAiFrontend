@@ -10,6 +10,9 @@ import WelCome from '../pages/dashboard/WelCome';
 import MultiWebcamStream from '../pages/dashboard/MultiWebcamStream';
 import MultiWebcam from '../pages/dashboard/MultiWebcam';
 import Register from '../pages/auth/Register';
+import Profile from '../pages/dashboard/Profile';
+import CameraAdd from '../pages/dashboard/CameraAdd';
+import CameraList from '../pages/dashboard/CameraList';
 
 const router = createBrowserRouter([
     {
@@ -51,6 +54,18 @@ const router = createBrowserRouter([
             {
                 path:'detect',
                 element:<MultiWebcam/>
+            },
+            {
+                path:'profile',
+                element:<Profile/>
+            },
+            {
+                path:'add-camera',
+                element:<CameraAdd/>
+            },
+            {
+                path:'camera-list',
+                element:<CameraList/>
             }
         ]
     },
