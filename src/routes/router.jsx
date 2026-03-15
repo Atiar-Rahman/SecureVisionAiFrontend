@@ -9,6 +9,7 @@ import Contact from '../pages/Contact/Contact';
 import DashboardLayout from '../layouts/DashboardLayout';
 import WelCome from '../pages/dashboard/WelCome';
 import MultiWebcamStream from '../pages/dashboard/MultiWebcamStream';
+import MultiWebcam from '../pages/dashboard/MultiWebcam';
 
 const router = createBrowserRouter([
     {
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
             {
                 path:'detection',
                 element:<MultiWebcamStream/>
+            },
+            {
+                path:'detect',
+                element:<MultiWebcam/>
             }
         ]
     },

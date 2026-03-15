@@ -7,14 +7,14 @@ const MenuItems = () => {
     return (
         <div>
             <NavLink
-                to="/user"
+                to="/dashboard/detect"
                 className={({ isActive }) =>
                     `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
                     }`
                 }
             >
                 <User size={18} />
-                Profile
+                UserCameraDetect
             </NavLink>
 
             <NavLink
