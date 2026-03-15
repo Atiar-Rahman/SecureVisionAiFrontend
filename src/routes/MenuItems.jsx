@@ -18,14 +18,14 @@ const MenuItems = () => {
             </NavLink>
 
             <NavLink
-                to="/user/orders"
+                to="/dashboard/detection"
                 className={({ isActive }) =>
                     `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
                     }`
                 }
             >
                 <CreditCard size={18} />
-                Orders
+                Detection
             </NavLink>
 
             <NavLink
