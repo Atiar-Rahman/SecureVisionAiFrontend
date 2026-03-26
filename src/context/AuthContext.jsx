@@ -12,12 +12,13 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Fetch user profile
-    const fetchUserProfile = async () => {
-        if (!authToken) return;
+    const fetchUserProfile = async (token = authToken) => {
+        if (!token) return;
         setLoading(true);
+
         try {
             const response = await apiClient.get("/auth/users/me/", {
-                headers: { Authorization: `JWT ${authToken?.access}` },
+                headers: { Authorization: `JWT ${token?.access}` },
             });
             setUser(response.data);
         } catch (error) {
@@ -36,16 +37,33 @@ export const AuthProvider = ({ children }) => {
         setLoading(true);
         try {
             const response = await apiClient.post("/auth/jwt/create/", userData);
-            setAuthTokens(response.data);
-            localStorage.setItem("authTokens", JSON.stringify(response.data));
 
-            await fetchUserProfile();
+            const tokens = response.data;
+
+            setAuthTokens(tokens);
+            localStorage.setItem("authTokens", JSON.stringify(tokens));
+
+            // 🔥 Pass fresh token
+            await fetchUserProfile(tokens);
+
             return true;
         } catch (error) {
             console.log("Login error:", error?.response?.data || error);
             return false;
         } finally {
             setLoading(false);
+        }
+    };
+    
+
+    // register user
+    const registerUser = async (userData) => {
+        try {
+            await apiClient.post('/auth/users/', userData);
+            return true;
+        } catch (error) {
+            console.log(error.response?.data);
+            return false;
         }
     };
 
@@ -58,16 +76,20 @@ export const AuthProvider = ({ children }) => {
 
     // Automatically fetch profile if token exists
     useEffect(() => {
-        if (authToken) fetchUserProfile();
-        else setLoading(false);
-    }, []);
+        if (authToken) {
+            fetchUserProfile(authToken);
+        } else {
+            setLoading(false);
+        }
+    }, [authToken]);
 
     const authInfo = {
         user,
         loading,
+        setLoading,
         loginUser,
+        registerUser,
         logoutUser,
-        authToken,
     };
 
     return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;

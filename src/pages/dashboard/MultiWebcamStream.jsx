@@ -55,7 +55,7 @@ const MultiWebcamStream = ({ availableCameraIds = ["camera1", "camera2", "camera
     }, [selectedCameraIds]);
 
     return (
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center" }} className="my-10">
             <h2>Multi-Camera Stream</h2>
 
             {/* Camera ID selection */}

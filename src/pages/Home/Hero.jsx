@@ -37,11 +37,11 @@ const Hero = () => {
                     {/* CTA Buttons */}
                     <div className="flex gap-4">
 
-                        <Link className="btn btn-primary">
+                        <Link to='/dashboard' className="btn btn-primary">
                             Get Started
                         </Link>
 
-                        <Link className="btn btn-outline">
+                        <Link to='/detection' className="btn btn-outline">
                             Watch Demo
                         </Link>
 

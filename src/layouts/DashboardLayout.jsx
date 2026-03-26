@@ -1,12 +1,19 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Menu, X, LogOut } from "lucide-react";
 import MenuItems from '../routes/MenuItems';
+import AuthContext from '../context/AuthContext';
 
 
 const DashboardLayout = () =>  {
     const [isOpen, setIsOpen] = useState(false);
+    const { logoutUser } = useContext(AuthContext)
+
+    const handleLogout = async()=>{
+        await logoutUser()
+    }
+
 
     return (
         <div className="flex h-screen overflow-hidden">
@@ -42,7 +49,7 @@ const DashboardLayout = () =>  {
 
                 {/* Sidebar Bottom */}
                 <div className="p-4 border-t">
-                    <button className="w-full flex items-center gap-2 text-red-600 hover:text-red-800">
+                    <button onClick={handleLogout} className="w-full flex items-center gap-2 text-red-600 hover:text-red-800">
                         <LogOut size={18} />
                         Logout
                     </button>

@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+import AuthContext from "../../context/AuthContext";
+import Loading from "../Error&loading/Loading";
 
 const themes = ["light", "dark", "cupcake","synthwave","coffee","retro","aqua","deacula"];
 
 const Navbar = () => {
-    const [user] = useState(false);
+
     const [themeIndex, setThemeIndex] = useState(0);
 
     const changeTheme = () => {
@@ -12,6 +14,22 @@ const Navbar = () => {
         setThemeIndex(nextIndex);
         document.documentElement.setAttribute("data-theme", themes[nextIndex]);
     };
+
+    const { user,
+        loading,
+        logoutUser, } = useContext(AuthContext)
+
+    if(loading){
+        return <Loading/>
+    }
+
+    const handleLogout=async()=>{
+        try{
+            logoutUser()
+        }catch(err){
+            console.log(err)
+        }
+    }
 
     const navlinks = (
         <>
@@ -51,7 +69,19 @@ const Navbar = () => {
                     Theme
                 </button>
             </li>
-
+            <li>
+                <NavLink
+                    to="/detection"
+                    className={({ isActive }) =>
+                        `px-3 py-2 rounded-lg transition-all duration-200 font-medium ${isActive
+                            ? "bg-primary text-white"
+                            : "text-gray-600 hover:bg-base-200 hover:text-primary"
+                        }`
+                    }
+                >
+                    Detection
+                </NavLink>
+            </li>
             <li>
                 <NavLink
                     to="/dashboard"
@@ -105,7 +135,7 @@ const Navbar = () => {
 
                 {user ? (
                     <Link>
-                        <button className="btn btn-outline btn-error">
+                        <button className="btn btn-outline btn-error" onClick={handleLogout}>
                             LogOut
                         </button>
                     </Link>

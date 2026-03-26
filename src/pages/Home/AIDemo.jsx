@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const AIDemo = () => {
     return (
@@ -27,7 +28,7 @@ const AIDemo = () => {
 
                 {/* CTA Buttons */}
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    <button className="btn btn-primary">Try Live Demo</button>
+                    <Link to='/detection'><button className="btn btn-primary">Try Live Demo</button></Link>
                     <button className="btn btn-outline">Request Access</button>
                 </div>
 

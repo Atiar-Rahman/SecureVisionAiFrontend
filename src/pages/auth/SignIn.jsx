@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import AuthContext from "../../context/AuthContext";
 import Swal from "sweetalert2";
+import Loading from "../Error&loading/Loading";
 
 const SignIn = () => {
 
@@ -17,6 +18,7 @@ const SignIn = () => {
     const [captcha, setCaptcha] = useState("");
     const {register,handleSubmit} = useForm();
     const { 
+        setLoading,
         loginUser, 
     } = useContext(AuthContext)
 
@@ -30,11 +32,13 @@ const SignIn = () => {
 
         const success = await loginUser(data); // make loginUser return true/false
         if (success) {
+            setLoading(true)
             Swal.fire({
                 title: "Logged In!",
                 text: "Welcome back!",
                 icon: "success"
             });
+            setLoading(false)
             nevigate('/') 
         } else {
             Swal.fire({

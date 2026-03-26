@@ -14,6 +14,9 @@ import Profile from '../pages/dashboard/Profile';
 import CameraAdd from '../pages/dashboard/CameraAdd';
 import CameraList from '../pages/dashboard/CameraList';
 import AlertShow from '../pages/dashboard/AlertShow';
+import ProtectedRoute from './ProtectedRoute';
+import ShowAllContactUser from '../pages/dashboard/ShowAllContactUser';
+import ModelStatus from '../pages/dashboard/ModelStatus';
 
 const router = createBrowserRouter([
     {
@@ -27,7 +30,7 @@ const router = createBrowserRouter([
             },
             {
                 path:'contact/',
-                element:<Contact/>
+                element:<ProtectedRoute><Contact/></ProtectedRoute>
             },
             {
                 path:'register/',
@@ -36,12 +39,16 @@ const router = createBrowserRouter([
             {
                 path:'signin/',
                 element:<SignIn/>
-            }
+            },
+            {
+                path: '/detection',
+                element: <MultiWebcamStream />
+            },
         ]
     },
     {
         path: 'dashboard',
-        element: <DashboardLayout/>,
+        element: <ProtectedRoute><DashboardLayout /></ProtectedRoute>,
         errorElement: <NotFound/>,
         children: [
             {
@@ -71,6 +78,14 @@ const router = createBrowserRouter([
             {
                 path:'alert-show',
                 element:<AlertShow/>
+            },
+            {
+                path:'contacts-user',
+                element:<ShowAllContactUser/>
+            },
+            {
+                path:"model-status",
+                element:<ModelStatus/>
             }
         ]
     },
