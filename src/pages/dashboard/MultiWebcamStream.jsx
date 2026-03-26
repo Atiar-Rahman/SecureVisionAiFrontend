@@ -1,119 +1,131 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useRef, useEffect, useState } from "react";
 import Webcam from "react-webcam";
-import axios from "axios";
+import authApiClient from "../../services/auth-api-client";
 
 const MultiWebcamStream = ({ availableCameraIds = ["camera1", "camera2", "camera3"] }) => {
-    // Dynamic refs for all webcams
-    const webcamRefs = useRef(availableCameraIds.map(() => React.createRef()));
+    const webcamRefs = useRef([]);
 
-    // State for user-selected camera IDs
     const [selectedCameraIds, setSelectedCameraIds] = useState([...availableCameraIds]);
-
-    // State to hold predictions per camera
     const [results, setResults] = useState({});
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    // Capture frames for all cameras
+    // initialize refs safely
+    useEffect(() => {
+        webcamRefs.current = availableCameraIds.map(
+            (_, i) => webcamRefs.current[i] || React.createRef()
+        );
+    }, [availableCameraIds]);
+
     const captureFrames = async () => {
-        const promises = selectedCameraIds.map(async (cameraId, index) => {
-            const frame = webcamRefs.current[index].current?.getScreenshot();
-            if (!frame) return null;
+        if (isProcessing) return; //  prevent overlap
+        setIsProcessing(true);
 
-            try {
-                const { data } = await axios.post(
-                    "http://127.0.0.1:8000/api/detect-update/",
-                    { image: frame, camera_id: cameraId }
-                );
+        try {
+            const promises = selectedCameraIds.map(async (cameraId, index) => {
+                const frame = webcamRefs.current[index]?.current?.getScreenshot();
+                if (!frame) return null;
 
-                return { cameraId, data };
-            } catch (error) {
-                console.error(
-                    "API Error for camera",
-                    cameraId,
-                    error.response?.data || error.message
-                );
-                return null;
-            }
-        });
+                try {
+                    const { data } = await authApiClient.post('/api/detect-update/', {
+                        image: frame,
+                        camera_id: cameraId
+                    });
 
-        const resultsArray = await Promise.all(promises);
-        const newResults = {};
-        resultsArray.forEach(r => {
-            if (r) newResults[r.cameraId] = r.data;
-        });
+                    return { cameraId, data };
+                // eslint-disable-next-line no-unused-vars
+                } catch (error) {
+                    return {
+                        cameraId,
+                        data: { status: "Error", error: true }
+                    };
+                }
+            });
 
-        setResults(prev => ({ ...prev, ...newResults }));
+            const resultsArray = await Promise.all(promises);
+
+            const newResults = {};
+            resultsArray.forEach(r => {
+                if (r) newResults[r.cameraId] = r.data;
+            });
+
+            setResults(prev => ({ ...prev, ...newResults }));
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
-    // Periodic capture
+    //  safer interval (reduce load)
     useEffect(() => {
         const interval = setInterval(() => {
             captureFrames();
-        }, 500); // 500ms interval recommended
+        }, 1500); //  1.5 sec (recommended)
 
         return () => clearInterval(interval);
-    }, [selectedCameraIds]);
+    }, [selectedCameraIds, isProcessing]);
 
     return (
-        <div style={{ textAlign: "center" }} className="my-10">
-            <h2>Multi-Camera Stream</h2>
+        <div className="p-6 text-center">
+            <h2 className="text-2xl font-bold mb-4">Multi-Camera Stream</h2>
 
-            {/* Camera ID selection */}
-            <div style={{ marginBottom: "20px" }}>
+            {/* Camera Selector */}
+            <div className="mb-6">
                 {availableCameraIds.map((_, index) => (
-                    <label key={index} style={{ marginRight: "20px" }}>
-                        Camera {index + 1} ID:
-                        <select
-                            value={selectedCameraIds[index]}
-                            onChange={e => {
-                                const newIds = [...selectedCameraIds];
-                                newIds[index] = e.target.value;
-                                setSelectedCameraIds(newIds);
-                            }}
-                        >
-                            {availableCameraIds.map(id => (
-                                <option key={id} value={id}>
-                                    {id}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
+                    <select
+                        key={index}
+                        className="mx-2 p-2 border rounded"
+                        value={selectedCameraIds[index]}
+                        onChange={(e) => {
+                            const newIds = [...selectedCameraIds];
+                            newIds[index] = e.target.value;
+                            setSelectedCameraIds(newIds);
+                        }}
+                    >
+                        {availableCameraIds.map(id => (
+                            <option key={id} value={id}>{id}</option>
+                        ))}
+                    </select>
                 ))}
             </div>
 
-            {/* Webcam streams */}
-            <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
+            {/* Streams */}
+            <div className="flex flex-wrap justify-center gap-6">
                 {availableCameraIds.map((_, index) => {
                     const cameraId = selectedCameraIds[index];
                     const result = results[cameraId];
 
                     return (
-                        <div key={index} style={{ textAlign: "center" }}>
+                        <div key={index} className="bg-white shadow rounded-xl p-3">
                             <Webcam
-                                ref={webcamRefs.current[index]}
+                                ref={el => (webcamRefs.current[index] = { current: el })}
                                 screenshotFormat="image/jpeg"
                                 audio={false}
                                 videoConstraints={{ width: 320, height: 240 }}
                             />
-                            {result && result.label && (
-                                <div
-                                    style={{
-                                        backgroundColor: result.label === "Suspicious" ? "red" : "green",
-                                        color: "white",
-                                        padding: "5px",
-                                        marginTop: "5px",
-                                    }}
-                                >
-                                    <h4>{result.label}</h4>
-                                    <h5>Confidence: {result.confidence}</h5>
-                                </div>
-                            )}
-                            {/* Optional: show status while collecting frames */}
-                            {result && !result.label && (
-                                <div style={{ marginTop: "5px", color: "orange" }}>
-                                    {result.status || "Collecting frames..."}
-                                </div>
-                            )}
+
+                            {/* Result UI */}
+                            <div className="mt-2">
+                                {result?.error && (
+                                    <p className="text-red-500">Error detecting</p>
+                                )}
+
+                                {result?.label && (
+                                    <div className={`p-2 rounded text-white ${result.label === "Suspicious"
+                                            ? "bg-red-500"
+                                            : "bg-green-500"
+                                        }`}>
+                                        <p>{result.label}</p>
+                                        <p className="text-sm">
+                                            {result.confidence}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {!result && (
+                                    <p className="text-gray-400 text-sm">
+                                        Waiting...
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     );
                 })}

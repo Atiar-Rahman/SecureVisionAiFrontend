@@ -1,77 +1,115 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState, useRef } from "react";
 import Webcam from "react-webcam";
-import axios from "axios";
+import authApiClient from "../../services/auth-api-client";
 
 const MultiWebcam = () => {
     // eslint-disable-next-line no-unused-vars
-    const [cameras,setCameras] = useState([]);
+    const [cameras, setCameras] = useState([]);
     const [selectedCameras, setSelectedCameras] = useState([]);
     const [results, setResults] = useState({});
+    const [processing, setProcessing] = useState(false);
+
     const webcamRefs = useRef([]);
 
-    // Fetch cameras from backend
+    //  Fetch cameras with AUTH
     useEffect(() => {
-        axios.get("http://127.0.0.1:8000/api/camera-list/").then(res => {
-            setCameras(res.data);
-            setSelectedCameras(res.data.map(cam => cam.name));
-            webcamRefs.current = res.data.map(() => React.createRef());
-        });
+        const fetchCameras = async () => {
+            try {
+                const res = await authApiClient.get("/api/camera-list/");
+                setCameras(res.data);
+                setSelectedCameras(res.data.map(cam => cam.name));
+
+                webcamRefs.current = res.data.map(
+                    (_, i) => webcamRefs.current[i] || React.createRef()
+                );
+            } catch (err) {
+                console.error("Camera fetch error:", err.response?.data || err.message);
+            }
+        };
+
+        fetchCameras();
     }, []);
 
-    // Capture frames and send to backend
+    //  Capture frames (parallel + safe)
     const captureFrames = async () => {
-        for (let i = 0; i < selectedCameras.length; i++) {
-            const cameraName = selectedCameras[i];
-            const frame = webcamRefs.current[i].current?.getScreenshot();
-            if (!frame) continue;
+        if (processing) return; //  prevent overlap
+        setProcessing(true);
 
-            try {
-                const res = await axios.post("http://127.0.0.1:8000/api/detection/", {
+        try {
+            const promises = selectedCameras.map((cameraName, i) => {
+                const frame = webcamRefs.current[i]?.current?.getScreenshot();
+                if (!frame) return null;
+
+                return authApiClient.post("/api/detection/", {
                     image: frame,
                     camera_name: cameraName
-                });
-                setResults(prev => ({ ...prev, [cameraName]: res.data }));
-            } catch (err) {
-                console.error(err.response?.data || err.message);
-            }
+                })
+                    .then(res => ({ cameraName, data: res.data }))
+                    .catch(() => ({ cameraName, data: { error: true } }));
+            });
+
+            const responses = await Promise.all(promises);
+
+            const updatedResults = {};
+            responses.forEach(r => {
+                if (r) updatedResults[r.cameraName] = r.data;
+            });
+
+            setResults(prev => ({ ...prev, ...updatedResults }));
+
+        } finally {
+            setProcessing(false);
         }
     };
 
-    // Periodic capture
+    //  Better interval
     useEffect(() => {
-        const interval = setInterval(captureFrames, 500);
+        const interval = setInterval(captureFrames, 1500); //  1.5 sec
         return () => clearInterval(interval);
-    }, [selectedCameras]);
+    }, [selectedCameras, processing]);
 
     return (
-        <div style={{ textAlign: "center" }}>
-            <h2>Multi-Camera Live Stream</h2>
+        <div className="p-6 text-center">
+            <h2 className="text-xl font-bold mb-4">Multi-Camera Live Stream</h2>
 
-            <div style={{ display: "flex", justifyContent: "center", gap: "20px", flexWrap: "wrap" }}>
+            <div className="flex flex-wrap justify-center gap-5">
                 {selectedCameras.map((camName, i) => {
                     const result = results[camName];
+
                     return (
-                        <div key={i} style={{ textAlign: "center" }}>
+                        <div key={i} className="bg-white shadow rounded-xl p-3">
                             <Webcam
                                 ref={webcamRefs.current[i]}
                                 screenshotFormat="image/jpeg"
                                 audio={false}
                                 videoConstraints={{ width: 320, height: 240 }}
                             />
-                            {result && (
-                                <div style={{
-                                    marginTop: 5,
-                                    padding: 5,
-                                    color: "white",
-                                    backgroundColor: result.label === "Suspicious" ? "red" : "green",
-                                    borderRadius: 5
-                                }}>
-                                    <strong>{result.label}</strong>
-                                    <div>Confidence: {result.confidence}</div>
-                                </div>
-                            )}
-                            <small>{camName}</small>
+
+                            <div className="mt-2">
+                                {result?.error && (
+                                    <p className="text-red-500">Error</p>
+                                )}
+
+                                {result?.label && (
+                                    <div className={`text-white p-2 rounded ${result.label === "Suspicious"
+                                            ? "bg-red-500"
+                                            : "bg-green-500"
+                                        }`}>
+                                        <strong>{result.label}</strong>
+                                        <div className="text-sm">
+                                            {result.confidence}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!result && (
+                                    <p className="text-gray-400 text-sm">
+                                        Waiting...
+                                    </p>
+                                )}
+                            </div>
+
+                            <small className="block mt-1">{camName}</small>
                         </div>
                     );
                 })}
