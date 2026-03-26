@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import authApiClient from '../../services/auth-api-client';
 import Swal from 'sweetalert2';
+import { useNavigate } from "react-router-dom";
 
 const CameraList = () => {
     const [cameras, setCameras] = useState([]);
@@ -43,11 +44,12 @@ const CameraList = () => {
             }
         }
     };
-
+    
     // 🔥 Edit Camera (simple redirect or modal)
+    const navigate = useNavigate();
+
     const handleEdit = (id) => {
-        // you can navigate or open modal
-        console.log("Edit camera:", id);
+        navigate(`/dashboard/camera-edit/${id}`);
     };
 
     if (loading) {

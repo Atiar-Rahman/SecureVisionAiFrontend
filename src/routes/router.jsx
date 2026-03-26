@@ -17,6 +17,7 @@ import AlertShow from '../pages/dashboard/AlertShow';
 import ProtectedRoute from './ProtectedRoute';
 import ShowAllContactUser from '../pages/dashboard/ShowAllContactUser';
 import ModelStatus from '../pages/dashboard/ModelStatus';
+import CameraEdit from '../pages/dashboard/CameraEdit';
 
 const router = createBrowserRouter([
     {
@@ -70,6 +71,10 @@ const router = createBrowserRouter([
             {
                 path:'add-camera',
                 element:<CameraAdd/>
+            },
+            {
+                path:'camera-edit/:id',
+                element:<CameraEdit/>
             },
             {
                 path:'camera-list',

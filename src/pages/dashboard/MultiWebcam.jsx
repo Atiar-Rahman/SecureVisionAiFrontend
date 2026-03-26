@@ -109,7 +109,7 @@ const MultiWebcam = () => {
                                 )}
                             </div>
 
-                            <small className="block mt-1">{camName}</small>
+                            <small className="block mt-1 text-black">{camName}</small>
                         </div>
                     );
                 })}
