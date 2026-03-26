@@ -1,8 +1,11 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
-import React, { useState } from "react";
+
+import { useContext, useState } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import AuthContext from "../../context/AuthContext";
+import Swal from "sweetalert2";
 
 const SignIn = () => {
 
@@ -12,17 +15,37 @@ const SignIn = () => {
     const [num2] = useState(Math.floor(Math.random() * 10));
 
     const [captcha, setCaptcha] = useState("");
+    const {register,handleSubmit} = useForm();
+    const { 
+        loginUser, 
+    } = useContext(AuthContext)
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const nevigate = useNavigate()
 
+    const onSubmit = async (data) => {
         if (parseInt(captcha) !== num1 + num2) {
             alert("Wrong captcha");
             return;
         }
 
-        alert("Login Successful");
+        const success = await loginUser(data); // make loginUser return true/false
+        if (success) {
+            Swal.fire({
+                title: "Logged In!",
+                text: "Welcome back!",
+                icon: "success"
+            });
+            nevigate('/') 
+        } else {
+            Swal.fire({
+                title: "Oops!",
+                text: "Invalid credentials",
+                icon: "error"
+            });
+            nevigate('/signin')
+        }
     };
+
     return (
         <div className="min-h-screen flex items-center justify-center  relative">
 
@@ -41,12 +64,13 @@ const SignIn = () => {
                     SignIn your Existing Accounts
                 </h1>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
                     {/* EMAIL */}
                     <input
                         type="email"
                         placeholder="Email"
+                        {...register('email')}
                         className="w-full p-3 rounded-lg bg-white/20 text-white placeholder-white outline-none focus:ring-2 focus:ring-white"
                         required
                     />
@@ -55,6 +79,7 @@ const SignIn = () => {
                     <input
                         type="password"
                         placeholder="Password"
+                        {...register('password')}
                         className="w-full p-3 rounded-lg bg-white/20 text-white placeholder-white outline-none focus:ring-2 focus:ring-white"
                         required
                     />
@@ -79,12 +104,14 @@ const SignIn = () => {
                         whileTap={{ scale: 0.95 }}
                         className="w-full bg-white text-purple-600 font-semibold py-3 rounded-lg shadow-lg"
                     >
-                        Login
+                        SignIn
                     </motion.button>
 
                 </form>
-                <h1 className="text-white mt-10">No, Account Please Now<Link to='/register' className="btn btn-outline ml-3">Register</Link></h1>
-            </motion.div>
+                <p className="text-white mt-10">
+                    Don't have an account? <Link to='/register' className="underline ml-2">Register</Link>
+                </p>
+                </motion.div>
         </div>
     );
 };

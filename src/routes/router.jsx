@@ -13,6 +13,7 @@ import Register from '../pages/auth/Register';
 import Profile from '../pages/dashboard/Profile';
 import CameraAdd from '../pages/dashboard/CameraAdd';
 import CameraList from '../pages/dashboard/CameraList';
+import AlertShow from '../pages/dashboard/AlertShow';
 
 const router = createBrowserRouter([
     {
@@ -66,6 +67,10 @@ const router = createBrowserRouter([
             {
                 path:'camera-list',
                 element:<CameraList/>
+            },
+            {
+                path:'alert-show',
+                element:<AlertShow/>
             }
         ]
     },
