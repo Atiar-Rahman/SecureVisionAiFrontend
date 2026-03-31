@@ -97,6 +97,16 @@ const MenuItems = () => {
                 <CreditCard size={18} />
                 Alert Show
             </NavLink>
+            <NavLink
+                to="/dashboard/detection-skip"
+                className={({ isActive }) =>
+                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
+                    }`
+                }
+            >
+                <CreditCard size={18} />
+                detection skip
+            </NavLink>
 
             <NavLink
                 to="/user/settings"

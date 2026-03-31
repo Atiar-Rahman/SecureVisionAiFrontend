@@ -18,6 +18,7 @@ import ProtectedRoute from './ProtectedRoute';
 import ShowAllContactUser from '../pages/dashboard/ShowAllContactUser';
 import ModelStatus from '../pages/dashboard/ModelStatus';
 import CameraEdit from '../pages/dashboard/CameraEdit';
+import WebcamMulti from '../pages/dashboard/WebcamMulti';
 
 const router = createBrowserRouter([
     {
@@ -91,6 +92,10 @@ const router = createBrowserRouter([
             {
                 path:"model-status",
                 element:<ModelStatus/>
+            },
+            {
+                path:'detection-skip',
+                element:<WebcamMulti/>
             }
         ]
     },
