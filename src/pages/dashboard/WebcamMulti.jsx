@@ -1,19 +1,20 @@
-/* eslint-disable no-unused-vars */
 import React, { useEffect, useState, useRef } from "react";
 import Webcam from "react-webcam";
 import authApiClient from "../../services/auth-api-client";
 
 const WebcamMulti = () => {
+    // eslint-disable-next-line no-unused-vars
     const [cameras, setCameras] = useState([]);
     const [selectedCameras, setSelectedCameras] = useState([]);
 
     const [results, setResults] = useState({});
-    const [lastResults, setLastResults] = useState({}); //  cache last valid label
+    const [lastResults, setLastResults] = useState({});
 
     const processingMapRef = useRef({});
     const webcamRefs = useRef({});
+    const audioRef = useRef(null);
 
-    // 🔹 Fetch cameras
+    //  Fetch cameras
     useEffect(() => {
         const fetchCameras = async () => {
             try {
@@ -28,11 +29,10 @@ const WebcamMulti = () => {
         fetchCameras();
     }, []);
 
-    // 🔹 Capture frames
+    //  Capture frames
     const captureFrames = async () => {
         const promises = selectedCameras.map(async (cameraName) => {
 
-            //  Skip if already processing
             if (processingMapRef.current[cameraName]) return null;
 
             const frame = webcamRefs.current[cameraName]?.getScreenshot();
@@ -66,44 +66,71 @@ const WebcamMulti = () => {
 
             updated[r.cameraName] = r.data;
 
-            //  only update cache if valid label আসে
             if (r.data?.label) {
                 lastUpdated[r.cameraName] = r.data;
+
+                const prevLabel = lastResults[r.cameraName]?.label;
+                const currentLabel = r.data.label;
+
+                console.log(currentLabel);
+
+                // ALARM: ONLY WHEN NORMAL → SUSPICIOUS
+                if (
+                    currentLabel === "Suspicious" &&
+                    prevLabel !== "Suspicious"
+                ) {
+                    audioRef.current?.play().catch(() => { });
+                }
+
+                // OPTIONAL: stop alarm when back to Normal
+                if (currentLabel === "Normal" && prevLabel === "Suspicious") {
+                    audioRef.current?.pause();
+                    audioRef.current.currentTime = 0;
+                }
             }
         });
 
         // update live results
         setResults(prev => ({ ...prev, ...updated }));
 
-        // update last valid results
+        // update cache
         if (Object.keys(lastUpdated).length > 0) {
             setLastResults(prev => ({ ...prev, ...lastUpdated }));
         }
     };
 
-    // 🔹 Stable interval
+    //  Stable interval
     useEffect(() => {
         const interval = setInterval(captureFrames, 1500);
         return () => clearInterval(interval);
-    }, [selectedCameras]);
+    }, [selectedCameras, lastResults]);
 
     return (
         <div className="p-6 text-center">
-            <h2 className="text-xl font-bold mb-4">Multi-Camera Live Stream</h2>
+            <h2 className="text-xl font-bold mb-4">
+                Multi-Camera Live Stream
+            </h2>
+
+            {/* Alarm sound */}
+            <audio ref={audioRef} src="/src/assets/Danger Alarm Sound Effect.mp3" />
 
             <div className="flex flex-wrap justify-center gap-5">
                 {selectedCameras.map((camName) => {
-
-                    //  fallback to last result if skipped
-                    const result = results[camName] || lastResults[camName];
+                    const result =
+                        results[camName] || lastResults[camName];
 
                     return (
                         <div key={camName} className="bg-white shadow rounded-xl p-3">
                             <Webcam
-                                ref={(el) => (webcamRefs.current[camName] = el)}
+                                ref={(el) =>
+                                    (webcamRefs.current[camName] = el)
+                                }
                                 screenshotFormat="image/jpeg"
                                 audio={false}
-                                videoConstraints={{ width: 320, height: 240 }}
+                                videoConstraints={{
+                                    width: 320,
+                                    height: 240
+                                }}
                             />
 
                             <div className="mt-2">
@@ -112,12 +139,16 @@ const WebcamMulti = () => {
                                 )}
 
                                 {result?.label ? (
-                                    <div className={`text-white p-2 rounded ${result.label === "Suspicious"
-                                            ? "bg-red-500"
-                                            : "bg-green-500"
-                                        }`}>
+                                    <div
+                                        className={`text-white p-2 rounded ${result.label === "Suspicious"
+                                                ? "bg-red-500"
+                                                : "bg-green-500"
+                                            }`}
+                                    >
                                         <strong>{result.label}</strong>
-                                        <div className="text-sm">{result.confidence}</div>
+                                        <div className="text-sm">
+                                            {result.confidence}
+                                        </div>
                                     </div>
                                 ) : (
                                     <p className="text-gray-400 text-sm">
@@ -132,7 +163,9 @@ const WebcamMulti = () => {
                                 )}
                             </div>
 
-                            <small className="block mt-1">{camName}</small>
+                            <small className="block mt-1">
+                                {camName}
+                            </small>
                         </div>
                     );
                 })}

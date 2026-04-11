@@ -3,15 +3,16 @@ import Webcam from "react-webcam";
 import authApiClient from "../../services/auth-api-client";
 
 const MultiWebcam = () => {
-    // eslint-disable-next-line no-unused-vars
     const [cameras, setCameras] = useState([]);
     const [selectedCameras, setSelectedCameras] = useState([]);
     const [results, setResults] = useState({});
     const [processing, setProcessing] = useState(false);
 
     const webcamRefs = useRef([]);
+    const audioRef = useRef(null);
+    const lastResultsRef = useRef({}); // for alarm control (NO re-render issue)
 
-    //  Fetch cameras with AUTH
+    // 🔹 Fetch cameras
     useEffect(() => {
         const fetchCameras = async () => {
             try {
@@ -30,9 +31,18 @@ const MultiWebcam = () => {
         fetchCameras();
     }, []);
 
-    //  Capture frames (parallel + safe)
+    
+    const triggerAlarm = () => {
+        if (!audioRef.current) return;
+
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(() => { });
+    };
+
+    //  Capture frames
     const captureFrames = async () => {
-        if (processing) return; //  prevent overlap
+        if (processing) return;
         setProcessing(true);
 
         try {
@@ -51,8 +61,27 @@ const MultiWebcam = () => {
             const responses = await Promise.all(promises);
 
             const updatedResults = {};
+
             responses.forEach(r => {
-                if (r) updatedResults[r.cameraName] = r.data;
+                if (!r) return;
+
+                updatedResults[r.cameraName] = r.data;
+
+                const currentLabel = r.data?.label;
+                const prevLabel = lastResultsRef.current[r.cameraName]?.label;
+
+                //  ALARM LOGIC (NO SPAM)
+                if (
+                    currentLabel === "Normal" &&
+                    prevLabel !== "Normal"
+                ) {
+                    triggerAlarm();
+                }
+
+                // update cache
+                if (currentLabel) {
+                    lastResultsRef.current[r.cameraName] = r.data;
+                }
             });
 
             setResults(prev => ({ ...prev, ...updatedResults }));
@@ -62,15 +91,20 @@ const MultiWebcam = () => {
         }
     };
 
-    //  Better interval
+    //  Interval
     useEffect(() => {
-        const interval = setInterval(captureFrames, 1500); //  1.5 sec
+        const interval = setInterval(captureFrames, 1500);
         return () => clearInterval(interval);
     }, [selectedCameras, processing]);
 
     return (
         <div className="p-6 text-center">
-            <h2 className="text-xl font-bold mb-4">Multi-Camera Live Stream</h2>
+            <h2 className="text-xl font-bold mb-4">
+                Multi-Camera Live Stream
+            </h2>
+
+            {/*  ALARM SOUND */}
+            <audio ref={audioRef} src="/src/assets/Danger Alarm Sound Effect.mp3" />
 
             <div className="flex flex-wrap justify-center gap-5">
                 {selectedCameras.map((camName, i) => {
@@ -82,7 +116,10 @@ const MultiWebcam = () => {
                                 ref={webcamRefs.current[i]}
                                 screenshotFormat="image/jpeg"
                                 audio={false}
-                                videoConstraints={{ width: 320, height: 240 }}
+                                videoConstraints={{
+                                    width: 320,
+                                    height: 240
+                                }}
                             />
 
                             <div className="mt-2">
@@ -90,26 +127,28 @@ const MultiWebcam = () => {
                                     <p className="text-red-500">Error</p>
                                 )}
 
-                                {result?.label && (
-                                    <div className={`text-white p-2 rounded ${result.label === "Suspicious"
-                                            ? "bg-red-500"
-                                            : "bg-green-500"
-                                        }`}>
+                                {result?.label ? (
+                                    <div
+                                        className={`text-white p-2 rounded ${result.label === "Suspicious"
+                                                ? "bg-red-500"
+                                                : "bg-green-500"
+                                            }`}
+                                    >
                                         <strong>{result.label}</strong>
                                         <div className="text-sm">
                                             {result.confidence}
                                         </div>
                                     </div>
-                                )}
-
-                                {!result && (
+                                ) : (
                                     <p className="text-gray-400 text-sm">
                                         Waiting...
                                     </p>
                                 )}
                             </div>
 
-                            <small className="block mt-1 text-black">{camName}</small>
+                            <small className="block mt-1 text-black">
+                                {camName}
+                            </small>
                         </div>
                     );
                 })}
