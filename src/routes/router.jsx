@@ -19,6 +19,7 @@ import ShowAllContactUser from '../pages/dashboard/ShowAllContactUser';
 import ModelStatus from '../pages/dashboard/ModelStatus';
 import CameraEdit from '../pages/dashboard/CameraEdit';
 import WebcamMulti from '../pages/dashboard/WebcamMulti';
+import CNN3DDetection from '../pages/dashboard/CNN3DDetection';
 
 const router = createBrowserRouter([
     {
@@ -96,6 +97,9 @@ const router = createBrowserRouter([
             {
                 path:'detection-skip',
                 element:<WebcamMulti/>
+            },{
+                path:'detection-3dcnn',
+                element:<CNN3DDetection/>
             }
         ]
     },

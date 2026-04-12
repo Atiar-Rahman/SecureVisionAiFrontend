@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Webcam from "react-webcam";
 import authApiClient from "../../services/auth-api-client";
 
-const WebcamMulti = () => {
+const CNN3DDetection = () => {
     const [cameras, setCameras] = useState([]);
     const [selectedCameras, setSelectedCameras] = useState([]);
 
@@ -13,7 +13,7 @@ const WebcamMulti = () => {
     const webcamRefs = useRef({});
     const audioRef = useRef(null);
 
-    // 🔥 NEW: alarm control refs
+    //  NEW: alarm control refs
     const lastAlarmTimeRef = useRef({});
     const alarmStateRef = useRef({});
 
@@ -49,7 +49,7 @@ const WebcamMulti = () => {
             processingMapRef.current[cameraName] = true;
 
             try {
-                const res = await authApiClient.post("/api/detection-skip/", {
+                const res = await authApiClient.post("/api/detection-3dcnn/", {
                     image: frame,
                     camera_name: cameraName
                 });
@@ -85,7 +85,7 @@ const WebcamMulti = () => {
             console.log(camName, currentLabel);
 
             // -----------------------------
-            // 🔥 1. Normal → Suspicious (START ALARM)
+            //  1. Normal → Suspicious (START ALARM)
             // -----------------------------
             if (currentLabel === "Suspicious" && prevLabel !== "Suspicious") {
 
@@ -97,7 +97,7 @@ const WebcamMulti = () => {
             }
 
             // -----------------------------
-            // 🔥 2. Suspicious → Suspicious (COOLDOWN REPEAT)
+            //  2. Suspicious → Suspicious (COOLDOWN REPEAT)
             // -----------------------------
             if (currentLabel === "Suspicious" && prevLabel === "Suspicious") {
 
@@ -115,7 +115,7 @@ const WebcamMulti = () => {
             }
 
             // -----------------------------
-            // 🔥 3. Suspicious → Normal (STOP ALARM)
+            //  3. Suspicious → Normal (STOP ALARM)
             // -----------------------------
             if (currentLabel === "Normal" && prevLabel === "Suspicious") {
 
@@ -223,4 +223,4 @@ const WebcamMulti = () => {
     );
 };
 
-export default WebcamMulti;
+export default CNN3DDetection;
