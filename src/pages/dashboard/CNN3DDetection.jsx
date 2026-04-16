@@ -158,7 +158,7 @@ const CNN3DDetection = () => {
             {/* Alarm sound */}
             <audio
                 ref={audioRef}
-                src="/src/assets/Danger Alarm Sound Effect.mp3"
+                src="/Danger Alarm Sound Effect.mp3"
             />
 
             <div className="flex flex-wrap justify-center gap-5">

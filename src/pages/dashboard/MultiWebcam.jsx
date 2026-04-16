@@ -104,7 +104,10 @@ const MultiWebcam = () => {
             </h2>
 
             {/*  ALARM SOUND */}
-            <audio ref={audioRef} src="/src/assets/Danger Alarm Sound Effect.mp3" />
+            <audio
+                ref={audioRef}
+                src="/Danger Alarm Sound Effect.mp3"
+            />
 
             <div className="flex flex-wrap justify-center gap-5">
                 {selectedCameras.map((camName, i) => {
