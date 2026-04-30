@@ -1,27 +1,24 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { createRef, useEffect, useEffectEvent, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import authApiClient from "../../services/auth-api-client";
 
 const MultiWebcam = () => {
-    const [cameras, setCameras] = useState([]);
     const [selectedCameras, setSelectedCameras] = useState([]);
     const [results, setResults] = useState({});
-    const [processing, setProcessing] = useState(false);
 
     const webcamRefs = useRef([]);
     const audioRef = useRef(null);
-    const lastResultsRef = useRef({}); // for alarm control (NO re-render issue)
+    const lastResultsRef = useRef({});
+    const processingRef = useRef(false);
 
-    // 🔹 Fetch cameras
     useEffect(() => {
         const fetchCameras = async () => {
             try {
                 const res = await authApiClient.get("/api/camera-list/");
-                setCameras(res.data);
                 setSelectedCameras(res.data.map(cam => cam.name));
 
                 webcamRefs.current = res.data.map(
-                    (_, i) => webcamRefs.current[i] || React.createRef()
+                    (_, i) => webcamRefs.current[i] || createRef()
                 );
             } catch (err) {
                 console.error("Camera fetch error:", err.response?.data || err.message);
@@ -40,10 +37,9 @@ const MultiWebcam = () => {
         audioRef.current.play().catch(() => { });
     };
 
-    //  Capture frames
-    const captureFrames = async () => {
-        if (processing) return;
-        setProcessing(true);
+    const captureFrames = useEffectEvent(async () => {
+        if (processingRef.current) return;
+        processingRef.current = true;
 
         try {
             const promises = selectedCameras.map((cameraName, i) => {
@@ -87,15 +83,16 @@ const MultiWebcam = () => {
             setResults(prev => ({ ...prev, ...updatedResults }));
 
         } finally {
-            setProcessing(false);
+            processingRef.current = false;
         }
-    };
+    });
 
-    //  Interval
     useEffect(() => {
+        if (selectedCameras.length === 0) return undefined;
+
         const interval = setInterval(captureFrames, 1500);
         return () => clearInterval(interval);
-    }, [selectedCameras, processing]);
+    }, [selectedCameras]);
 
     return (
         <div className="p-6 text-center">
@@ -114,7 +111,7 @@ const MultiWebcam = () => {
                     const result = results[camName];
 
                     return (
-                        <div key={i} className="bg-white shadow rounded-xl p-3">
+                        <div key={camName} className="bg-white shadow rounded-xl p-3">
                             <Webcam
                                 ref={webcamRefs.current[i]}
                                 screenshotFormat="image/jpeg"

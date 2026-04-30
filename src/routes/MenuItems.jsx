@@ -1,133 +1,42 @@
-
 import { NavLink } from "react-router-dom";
-import { User,Home,AirVent,Webcam, Settings, CreditCard } from "lucide-react";
+import { Activity, Camera, Home, Layers3, MessageSquareText, Siren, User } from "lucide-react";
 
 
 const MenuItems = () => {
+    const items = [
+        { to: "/", icon: <Home size={18} />, label: "Home" },
+        { to: "/dashboard/model-status", icon: <Activity size={18} />, label: "Model Status" },
+        { to: "/dashboard/profile", icon: <User size={18} />, label: "Profile" },
+        { to: "/dashboard/add-camera", icon: <Camera size={18} />, label: "Add Camera" },
+        { to: "/dashboard/camera-list", icon: <Layers3 size={18} />, label: "Camera List" },
+        { to: "/dashboard/contacts-user", icon: <MessageSquareText size={18} />, label: "Contact Inbox" },
+        { to: "/dashboard/detect", icon: <Siren size={18} />, label: "Detection Feed" },
+        { to: "/dashboard/detection", icon: <Camera size={18} />, label: "Detection Stream" },
+        { to: "/dashboard/alert-show", icon: <Siren size={18} />, label: "Alert Center" },
+        { to: "/dashboard/detection-skip", icon: <Activity size={18} />, label: "Detection Skip" },
+        { to: "/dashboard/detection-3dcnn", icon: <Activity size={18} />, label: "3D CNN Detection" },
+    ];
+
     return (
-        <div>
-            <NavLink
-                to="/"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <Home size={18} />
-                Home
-            </NavLink>
-            <NavLink
-                to="/dashboard/model-status"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <AirVent size={18} />
-                Model Status
-            </NavLink>
-            <NavLink
-                to="/dashboard/profile"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <User size={18} />
-                Profile
-            </NavLink>
-            <NavLink
-                to="/dashboard/add-camera"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <Webcam size={18} />
-                Add Camera
-            </NavLink>
-            <NavLink
-                to="/dashboard/camera-list"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <Webcam size={18} />
-                Camera List
-            </NavLink>
-            <NavLink
-                to="/dashboard/contacts-user"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <User size={18} />
-                UserContactDetails
-            </NavLink>
-            <NavLink
-                to="/dashboard/detect"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <User size={18} />
-                UserCameraDetect
-            </NavLink>
-
-            <NavLink
-                to="/dashboard/detection"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <CreditCard size={18} />
-                Detection
-            </NavLink>
-            <NavLink
-                to="/dashboard/alert-show"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <CreditCard size={18} />
-                Alert Show
-            </NavLink>
-            <NavLink
-                to="/dashboard/detection-skip"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <CreditCard size={18} />
-                detection skip
-            </NavLink>
-            <NavLink
-                to="/dashboard/detection-3dcnn"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <CreditCard size={18} />
-                detection 3dcnn
-            </NavLink>
-
-            <NavLink
-                to="/user/settings"
-                className={({ isActive }) =>
-                    `flex items-center gap-3 p-2 rounded hover:bg-gray-500 transition ${isActive ? "bg-gray-300 font-semibold" : ""
-                    }`
-                }
-            >
-                <Settings size={18} />
-                Settings
-            </NavLink>
+        <div className="space-y-1.5">
+            {items.map(({ to, icon, label }) => (
+                <NavLink
+                    key={to}
+                    to={to}
+                    className={({ isActive }) =>
+                        `group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${
+                            isActive
+                                ? "bg-slate-900 text-white shadow-lg shadow-slate-900/15"
+                                : "text-slate-600 hover:bg-white/80 hover:text-slate-900"
+                        }`
+                    }
+                >
+                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 transition group-hover:bg-slate-900 group-hover:text-white">
+                        {icon}
+                    </span>
+                    <span>{label}</span>
+                </NavLink>
+            ))}
         </div>
     );
 };

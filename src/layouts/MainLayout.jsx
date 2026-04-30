@@ -5,15 +5,13 @@ import Footer from '../pages/shared/Footer';
 
 const MainLayout = () => {
     return (
-        <div className='container mx-auto'>
-            <div>
-                <Navbar/>
-            </div>
-            <div>
-                <Outlet/>
-            </div>
-            <div>
-                <Footer/>
+        <div className="app-shell min-h-screen">
+            <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 sm:px-6 lg:px-8">
+                <Navbar />
+                <main className="flex-1 py-6 sm:py-8">
+                    <Outlet />
+                </main>
+                <Footer />
             </div>
         </div>
     );

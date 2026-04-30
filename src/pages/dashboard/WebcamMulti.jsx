@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import authApiClient from "../../services/auth-api-client";
 
 const WebcamMulti = () => {
-    const [cameras, setCameras] = useState([]);
     const [selectedCameras, setSelectedCameras] = useState([]);
 
     const [results, setResults] = useState({});
@@ -13,18 +12,13 @@ const WebcamMulti = () => {
     const webcamRefs = useRef({});
     const audioRef = useRef(null);
 
-    //  NEW: alarm control refs
     const lastAlarmTimeRef = useRef({});
     const alarmStateRef = useRef({});
 
-    // -----------------------------
-    // Fetch cameras
-    // -----------------------------
     useEffect(() => {
         const fetchCameras = async () => {
             try {
                 const res = await authApiClient.get("/api/camera-list/");
-                setCameras(res.data);
                 setSelectedCameras(res.data.map(cam => cam.name));
             } catch (err) {
                 console.error("Camera fetch error:", err);
@@ -34,13 +28,8 @@ const WebcamMulti = () => {
         fetchCameras();
     }, []);
 
-    // -----------------------------
-    // Capture frames
-    // -----------------------------
-    const captureFrames = async () => {
-
+    const captureFrames = useEffectEvent(async () => {
         const promises = selectedCameras.map(async (cameraName) => {
-
             if (processingMapRef.current[cameraName]) return null;
 
             const frame = webcamRefs.current[cameraName]?.getScreenshot();
@@ -133,12 +122,11 @@ const WebcamMulti = () => {
         if (Object.keys(lastUpdated).length > 0) {
             setLastResults(prev => ({ ...prev, ...lastUpdated }));
         }
-    };
+    });
 
-    // -----------------------------
-    // Stable interval
-    // -----------------------------
     useEffect(() => {
+        if (selectedCameras.length === 0) return undefined;
+
         const interval = setInterval(() => {
             captureFrames();
         }, 1500);
@@ -146,9 +134,6 @@ const WebcamMulti = () => {
         return () => clearInterval(interval);
     }, [selectedCameras]);
 
-    // -----------------------------
-    // UI
-    // -----------------------------
     return (
         <div className="p-6 text-center">
             <h2 className="text-xl font-bold mb-4">

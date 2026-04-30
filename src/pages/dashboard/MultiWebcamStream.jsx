@@ -1,24 +1,23 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { createRef, useEffect, useEffectEvent, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import authApiClient from "../../services/auth-api-client";
 
 const MultiWebcamStream = ({ availableCameraIds = ["camera1", "camera2", "camera3"] }) => {
     const webcamRefs = useRef([]);
+    const isProcessingRef = useRef(false);
 
     const [selectedCameraIds, setSelectedCameraIds] = useState([...availableCameraIds]);
     const [results, setResults] = useState({});
-    const [isProcessing, setIsProcessing] = useState(false);
 
-    // initialize refs safely
     useEffect(() => {
         webcamRefs.current = availableCameraIds.map(
-            (_, i) => webcamRefs.current[i] || React.createRef()
+            (_, i) => webcamRefs.current[i] || createRef()
         );
     }, [availableCameraIds]);
 
-    const captureFrames = async () => {
-        if (isProcessing) return; //  prevent overlap
-        setIsProcessing(true);
+    const captureFrames = useEffectEvent(async () => {
+        if (isProcessingRef.current) return;
+        isProcessingRef.current = true;
 
         try {
             const promises = selectedCameraIds.map(async (cameraId, index) => {
@@ -50,18 +49,19 @@ const MultiWebcamStream = ({ availableCameraIds = ["camera1", "camera2", "camera
 
             setResults(prev => ({ ...prev, ...newResults }));
         } finally {
-            setIsProcessing(false);
+            isProcessingRef.current = false;
         }
-    };
+    });
 
-    //  safer interval (reduce load)
     useEffect(() => {
+        if (selectedCameraIds.length === 0) return undefined;
+
         const interval = setInterval(() => {
             captureFrames();
-        }, 1500); //  1.5 sec (recommended)
+        }, 1500);
 
         return () => clearInterval(interval);
-    }, [selectedCameraIds, isProcessing]);
+    }, [selectedCameraIds]);
 
     return (
         <div className="p-6 text-center">
@@ -96,7 +96,7 @@ const MultiWebcamStream = ({ availableCameraIds = ["camera1", "camera2", "camera
                     return (
                         <div key={index} className="bg-white shadow rounded-xl p-3">
                             <Webcam
-                                ref={el => (webcamRefs.current[index] = { current: el })}
+                                ref={webcamRefs.current[index]}
                                 screenshotFormat="image/jpeg"
                                 audio={false}
                                 videoConstraints={{ width: 320, height: 240 }}
