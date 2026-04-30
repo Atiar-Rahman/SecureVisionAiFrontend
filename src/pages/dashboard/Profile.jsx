@@ -32,7 +32,7 @@ const Profile = () => {
                 <p className="mt-3 text-sm leading-7 text-slate-300">
                     Manage your account details and keep the operator profile current for better coordination inside the monitoring dashboard.
                 </p>
-                <div className="mt-8 rounded-[24px] border border-cyan-400/10 bg-white/5 p-5">
+                <div className="mt-8 rounded-3xl border border-cyan-400/10 bg-white/5 p-5">
                     <div className="flex items-center gap-3">
                         <BadgeCheck size={18} className="text-emerald-300" />
                         <p className="font-semibold text-cyan-100">Verified access session</p>
@@ -55,7 +55,7 @@ const Profile = () => {
                 </div>
 
                 {profileItems.map(({ label, value, icon }) => (
-                    <article key={label} className="flex items-start gap-4 rounded-[24px] bg-slate-50 p-4">
+                    <article key={label} className="flex items-start gap-4 rounded-3xl bg-slate-50 p-4">
                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-700 shadow-sm">
                             {icon}
                         </div>
