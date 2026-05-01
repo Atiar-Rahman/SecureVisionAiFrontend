@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const authApiClient = axios.create({
-    // baseURL:'https://securevisionaibackend.onrender.com'
-    baseURL: 'http://127.0.0.1:8000/'
+    baseURL:'https://securevisionaibackend.onrender.com'
+    // baseURL: 'http://127.0.0.1:8000/'
 
 })
 
