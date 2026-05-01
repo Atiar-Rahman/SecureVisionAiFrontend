@@ -13,7 +13,7 @@ const CNN3DDetection = () => {
     const audioRef = useRef(null);
 
     const lastAlarmTimeRef = useRef({});
-    const alarmStateRef = useRef({});
+    const activeAlarmsRef = useRef(new Set());
 
     useEffect(() => {
         const fetchCameras = async () => {
@@ -77,11 +77,10 @@ const CNN3DDetection = () => {
             //  1. Normal → Suspicious (START ALARM)
             // -----------------------------
             if (currentLabel === "Suspicious" && prevLabel !== "Suspicious") {
-
+                activeAlarmsRef.current.add(camName);
                 audioRef.current.currentTime = 0;
-                audioRef.current.play().catch(() => {});
+                audioRef.current.play().catch(() => { });
 
-                alarmStateRef.current[camName] = true;
                 lastAlarmTimeRef.current[camName] = Date.now();
             }
 
@@ -89,7 +88,6 @@ const CNN3DDetection = () => {
             //  2. Suspicious → Suspicious (COOLDOWN REPEAT)
             // -----------------------------
             if (currentLabel === "Suspicious" && prevLabel === "Suspicious") {
-
                 const now = Date.now();
 
                 if (
@@ -97,7 +95,7 @@ const CNN3DDetection = () => {
                     now - lastAlarmTimeRef.current[camName] > 3000
                 ) {
                     audioRef.current.currentTime = 0;
-                    audioRef.current.play().catch(() => {});
+                    audioRef.current.play().catch(() => { });
 
                     lastAlarmTimeRef.current[camName] = now;
                 }
@@ -107,11 +105,11 @@ const CNN3DDetection = () => {
             //  3. Suspicious → Normal (STOP ALARM)
             // -----------------------------
             if (currentLabel === "Normal" && prevLabel === "Suspicious") {
-
-                audioRef.current.pause();
-                audioRef.current.currentTime = 0;
-
-                alarmStateRef.current[camName] = false;
+                activeAlarmsRef.current.delete(camName);
+                if (activeAlarmsRef.current.size === 0) {
+                    audioRef.current.pause();
+                    audioRef.current.currentTime = 0;
+                }
             }
         });
 
@@ -129,7 +127,7 @@ const CNN3DDetection = () => {
 
         const interval = setInterval(() => {
             captureFrames();
-        }, 1500);
+        }, 1000);
 
         return () => clearInterval(interval);
     }, [selectedCameras]);
@@ -158,10 +156,11 @@ const CNN3DDetection = () => {
                                     (webcamRefs.current[camName] = el)
                                 }
                                 screenshotFormat="image/jpeg"
+                                screenshotQuality={0.6}
                                 audio={false}
                                 videoConstraints={{
-                                    width: 320,
-                                    height: 240
+                                    width: 160,
+                                    height: 120
                                 }}
                             />
 
@@ -173,11 +172,10 @@ const CNN3DDetection = () => {
 
                                 {result?.label ? (
                                     <div
-                                        className={`text-white p-2 rounded ${
-                                            result.label === "Suspicious"
-                                                ? "bg-red-500"
-                                                : "bg-green-500"
-                                        }`}
+                                        className={`text-white p-2 rounded ${result.label === "Suspicious"
+                                            ? "bg-red-500"
+                                            : "bg-green-500"
+                                            }`}
                                     >
                                         <strong>{result.label}</strong>
                                         <div className="text-sm">

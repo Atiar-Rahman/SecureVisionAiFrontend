@@ -29,7 +29,7 @@ const CameraAdd = () => {
     };
 
     return (
-        <div className="flex justify-center">
+        <div className="flex justify-center bg-base-200">
             <div className="bg-base-100 shadow-lg rounded-2xl w-full md:w-1/2 lg:w-2/3">
 
                 <h1 className="text-xl font-bold mb-4 text-center">
