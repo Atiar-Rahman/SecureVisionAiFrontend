@@ -1,8 +1,9 @@
 import axios from "axios";
 
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
 const authApiClient = axios.create({
-    // baseURL:'https://securevisionaibackend.onrender.com'
-    baseURL: 'http://127.0.0.1:8000/'
+    baseURL,
 });
 
 export default authApiClient;
@@ -30,12 +31,28 @@ export const fetchAlerts = async () => {
     return Array.isArray(data) ? data : [];
 };
 
+export const fetchVideoPredictions = async () => {
+    const { data } = await authApiClient.get("/api/video-predictions/");
+    return Array.isArray(data) ? data : [];
+};
+
+export const fetchVideoPredictionById = async (predictionId) => {
+    const { data } = await authApiClient.get(`/api/video-predictions/${predictionId}/`);
+    return data;
+};
+
 export const deleteAlert = async (alertId) => {
     await authApiClient.delete(`/api/alerts/${alertId}/`);
 };
 
 export const detectLiveFrame = async ({ cameraName, image, mode = "standard" }) => {
-    const endpoint = mode === "3dcnn" ? "/api/detection-3dcnn/" : "/api/detection/";
+    const endpointMap = {
+        standard: "/api/detection/",
+        skip: "/api/detection-skip/",
+        "3dcnn": "/api/detection-3dcnn/",
+    };
+
+    const endpoint = endpointMap[mode] || endpointMap.standard;
     const { data } = await authApiClient.post(endpoint, {
         camera_name: cameraName,
         image,
@@ -49,12 +66,8 @@ export const uploadVideoPrediction = async ({ cameraId, video, onUploadProgress 
     formData.append("video", video);
 
     const { data } = await authApiClient.post("/api/video-predictions/", formData, {
-        headers: {
-            "Content-Type": "multipart/form-data",
-        },
         onUploadProgress,
     });
 
     return data;
 };
-

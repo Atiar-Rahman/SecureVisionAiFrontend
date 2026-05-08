@@ -210,13 +210,14 @@ const MultiWebcamStream = () => {
 
                     <div className="mt-6 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
                         <div className="space-y-4">
-                            <div className="overflow-hidden rounded-[28px] bg-slate-950">
+                            <div className="aspect-video min-h-[260px] overflow-hidden rounded-[28px] bg-slate-950">
                                 <Webcam
                                     ref={webcamRef}
                                     audio={false}
+                                    mirrored
                                     screenshotFormat="image/jpeg"
                                     screenshotQuality={0.82}
-                                    className="h-full w-full object-cover"
+                                    className="h-full min-h-[260px] w-full object-cover"
                                     videoConstraints={{ width: 960, height: 540 }}
                                 />
                             </div>

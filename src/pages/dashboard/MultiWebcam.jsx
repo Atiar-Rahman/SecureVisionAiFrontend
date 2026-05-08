@@ -1,6 +1,6 @@
 import React, { createRef, useEffect, useEffectEvent, useRef, useState } from "react";
 import Webcam from "react-webcam";
-import authApiClient from "../../services/auth-api-client";
+import { detectLiveFrame, fetchCameraList } from "../../services/auth-api-client";
 
 const MultiWebcam = () => {
     const [selectedCameras, setSelectedCameras] = useState([]);
@@ -14,10 +14,10 @@ const MultiWebcam = () => {
     useEffect(() => {
         const fetchCameras = async () => {
             try {
-                const res = await authApiClient.get("/api/camera-list/");
-                setSelectedCameras(res.data.map(cam => cam.name));
+                const data = await fetchCameraList();
+                setSelectedCameras(data.map(cam => cam.name));
 
-                webcamRefs.current = res.data.map(
+                webcamRefs.current = data.map(
                     (_, i) => webcamRefs.current[i] || createRef()
                 );
             } catch (err) {
@@ -46,12 +46,16 @@ const MultiWebcam = () => {
                 const frame = webcamRefs.current[i]?.current?.getScreenshot();
                 if (!frame) return null;
 
-                return authApiClient.post("/api/detection/", {
+                return detectLiveFrame({
                     image: frame,
-                    camera_name: cameraName
+                    cameraName,
+                    mode: "standard",
                 })
-                    .then(res => ({ cameraName, data: res.data }))
-                    .catch(() => ({ cameraName, data: { error: true } }));
+                    .then(data => ({ cameraName, data }))
+                    .catch((error) => ({
+                        cameraName,
+                        data: { error: error?.response?.data?.error || "Prediction failed" },
+                    }));
             });
 
             const responses = await Promise.all(promises);
@@ -68,8 +72,8 @@ const MultiWebcam = () => {
 
                 //  ALARM LOGIC (NO SPAM)
                 if (
-                    currentLabel === "Normal" &&
-                    prevLabel !== "Normal"
+                    currentLabel === "Suspicious" &&
+                    prevLabel !== "Suspicious"
                 ) {
                     triggerAlarm();
                 }
@@ -116,15 +120,25 @@ const MultiWebcam = () => {
                                 ref={webcamRefs.current[i]}
                                 screenshotFormat="image/jpeg"
                                 audio={false}
+                                mirrored
+                                className="h-60 w-full rounded-lg bg-slate-950 object-cover"
                                 videoConstraints={{
                                     width: 320,
                                     height: 240
                                 }}
                             />
 
+                            {result?.frame_url && (
+                                <img
+                                    src={result.frame_url}
+                                    alt={`${camName} detection preview`}
+                                    className="mt-3 h-40 w-full rounded-lg object-cover"
+                                />
+                            )}
+
                             <div className="mt-2">
                                 {result?.error && (
-                                    <p className="text-red-500">Error</p>
+                                    <p className="text-red-500">{result.error}</p>
                                 )}
 
                                 {result?.label ? (

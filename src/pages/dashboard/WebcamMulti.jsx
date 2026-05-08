@@ -1,6 +1,6 @@
 import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import Webcam from "react-webcam";
-import authApiClient from "../../services/auth-api-client";
+import { detectLiveFrame, fetchCameraList } from "../../services/auth-api-client";
 
 const WebcamMulti = () => {
     const [selectedCameras, setSelectedCameras] = useState([]);
@@ -18,8 +18,8 @@ const WebcamMulti = () => {
     useEffect(() => {
         const fetchCameras = async () => {
             try {
-                const res = await authApiClient.get("/api/camera-list/");
-                setSelectedCameras(res.data.map(cam => cam.name));
+                const data = await fetchCameraList();
+                setSelectedCameras(data.map(cam => cam.name));
             } catch (err) {
                 console.error("Camera fetch error:", err);
             }
@@ -38,15 +38,16 @@ const WebcamMulti = () => {
             processingMapRef.current[cameraName] = true;
 
             try {
-                const res = await authApiClient.post("/api/detection-skip/", {
+                const res = await detectLiveFrame({
                     image: frame,
-                    camera_name: cameraName
+                    cameraName,
+                    mode: "skip",
                 });
 
-                return { cameraName, data: res.data };
+                return { cameraName, data: res };
 
-            } catch {
-                return { cameraName, data: { error: true } };
+            } catch (error) {
+                return { cameraName, data: { error: error?.response?.data?.error || "Prediction failed" } };
 
             } finally {
                 processingMapRef.current[cameraName] = false;
@@ -159,16 +160,26 @@ const WebcamMulti = () => {
                                 }
                                 screenshotFormat="image/jpeg"
                                 audio={false}
+                                mirrored
+                                className="h-60 w-full rounded-lg bg-slate-950 object-cover"
                                 videoConstraints={{
                                     width: 320,
                                     height: 240
                                 }}
                             />
 
+                            {result?.frame_url && (
+                                <img
+                                    src={result.frame_url}
+                                    alt={`${camName} detection preview`}
+                                    className="mt-3 h-40 w-full rounded-lg object-cover"
+                                />
+                            )}
+
                             <div className="mt-2">
 
                                 {result?.error && (
-                                    <p className="text-red-500">Error</p>
+                                    <p className="text-red-500">{result.error}</p>
                                 )}
 
                                 {result?.label ? (
