@@ -7,6 +7,7 @@ import {
     fetchCameraList,
     fetchCameras,
 } from "../../services/auth-api-client";
+import { triggerModelWarmup } from "../../services/warmup";
 
 const FRAME_INTERVAL_MS = 1200;
 
@@ -30,6 +31,7 @@ const MultiWebcamStream = () => {
     const [latestAlert, setLatestAlert] = useState(null);
     const [isDetecting, setIsDetecting] = useState(false);
     const [error, setError] = useState("");
+    const [isWebcamReady, setIsWebcamReady] = useState(false);
 
     const webcamRef = useRef(null);
     const lastLabelRef = useRef(null);
@@ -37,6 +39,10 @@ const MultiWebcamStream = () => {
     const audioRef = useRef(null);
 
     useEffect(() => {
+        triggerModelWarmup().catch((error) => {
+            console.error("Detection page warmup failed:", error);
+        });
+
         const loadCameraData = async () => {
             try {
                 const [cameraList, cameras] = await Promise.all([
@@ -142,12 +148,16 @@ const MultiWebcamStream = () => {
         setError("");
         lastLabelRef.current = null;
 
+        if (!isWebcamReady) {
+            return undefined;
+        }
+
         const interval = setInterval(() => {
             captureFrame();
         }, FRAME_INTERVAL_MS);
 
         return () => clearInterval(interval);
-    }, [selectedCameraName]);
+    }, [selectedCameraName, isWebcamReady]);
 
     useEffect(() => {
         refreshLatestAlert();
@@ -215,10 +225,25 @@ const MultiWebcamStream = () => {
                                     ref={webcamRef}
                                     audio={false}
                                     mirrored
+                                    muted
+                                    playsInline
                                     screenshotFormat="image/jpeg"
                                     screenshotQuality={0.82}
                                     className="h-full min-h-[260px] w-full object-cover"
-                                    videoConstraints={{ width: 960, height: 540 }}
+                                    videoConstraints={{
+                                        width: { ideal: 960 },
+                                        height: { ideal: 540 },
+                                        facingMode: "user",
+                                    }}
+                                    onUserMedia={() => {
+                                        setIsWebcamReady(true);
+                                        setError("");
+                                    }}
+                                    onUserMediaError={(webcamLoadError) => {
+                                        console.error("Webcam access error:", webcamLoadError);
+                                        setIsWebcamReady(false);
+                                        setError("Webcam preview could not start. Please allow camera permission in the browser.");
+                                    }}
                                 />
                             </div>
 

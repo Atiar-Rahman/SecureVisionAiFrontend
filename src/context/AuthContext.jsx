@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useState } from "react";
 import apiClient from "../services/api-client";
+import { triggerModelWarmup } from "../services/warmup";
 
 const AuthContext = createContext();
 
@@ -45,6 +46,9 @@ export const AuthProvider = ({ children }) => {
 
             // 🔥 Pass fresh token
             await fetchUserProfile(tokens);
+            triggerModelWarmup().catch((error) => {
+                console.error("Model warmup failed after login:", error);
+            });
 
             return true;
         } catch (error) {
@@ -75,6 +79,12 @@ export const AuthProvider = ({ children }) => {
     };
 
     // Automatically fetch profile if token exists
+    useEffect(() => {
+        triggerModelWarmup().catch((error) => {
+            console.error("Initial model warmup failed:", error);
+        });
+    }, []);
+
     useEffect(() => {
         if (authToken) {
             fetchUserProfile(authToken);

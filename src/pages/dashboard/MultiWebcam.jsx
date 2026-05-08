@@ -5,6 +5,8 @@ import { detectLiveFrame, fetchCameraList } from "../../services/auth-api-client
 const MultiWebcam = () => {
     const [selectedCameras, setSelectedCameras] = useState([]);
     const [results, setResults] = useState({});
+    const [webcamError, setWebcamError] = useState("");
+    const [readyCameraMap, setReadyCameraMap] = useState({});
 
     const webcamRefs = useRef([]);
     const audioRef = useRef(null);
@@ -43,6 +45,8 @@ const MultiWebcam = () => {
 
         try {
             const promises = selectedCameras.map((cameraName, i) => {
+                if (!readyCameraMap[cameraName]) return null;
+
                 const frame = webcamRefs.current[i]?.current?.getScreenshot();
                 if (!frame) return null;
 
@@ -96,7 +100,18 @@ const MultiWebcam = () => {
 
         const interval = setInterval(captureFrames, 1500);
         return () => clearInterval(interval);
-    }, [selectedCameras]);
+    }, [selectedCameras, readyCameraMap]);
+
+    const handleUserMedia = (cameraName) => {
+        setWebcamError("");
+        setReadyCameraMap((prev) => ({ ...prev, [cameraName]: true }));
+    };
+
+    const handleUserMediaError = (error, cameraName) => {
+        console.error(`Webcam access error for ${cameraName}:`, error);
+        setReadyCameraMap((prev) => ({ ...prev, [cameraName]: false }));
+        setWebcamError("Webcam access failed. Please allow camera permission and make sure no other app is blocking the camera.");
+    };
 
     return (
         <div className="p-6 text-center">
@@ -121,12 +136,23 @@ const MultiWebcam = () => {
                                 screenshotFormat="image/jpeg"
                                 audio={false}
                                 mirrored
+                                muted
+                                playsInline
                                 className="h-60 w-full rounded-lg bg-slate-950 object-cover"
                                 videoConstraints={{
-                                    width: 320,
-                                    height: 240
+                                    width: { ideal: 640 },
+                                    height: { ideal: 480 },
+                                    facingMode: "user",
                                 }}
+                                onUserMedia={() => handleUserMedia(camName)}
+                                onUserMediaError={(error) => handleUserMediaError(error, camName)}
                             />
+
+                            {!readyCameraMap[camName] && (
+                                <p className="mt-2 text-sm text-amber-600">
+                                    Waiting for webcam access...
+                                </p>
+                            )}
 
                             {result?.frame_url && (
                                 <img
@@ -167,6 +193,10 @@ const MultiWebcam = () => {
                     );
                 })}
             </div>
+
+            {webcamError && (
+                <p className="mt-4 text-sm text-red-500">{webcamError}</p>
+            )}
         </div>
     );
 };

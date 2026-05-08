@@ -1,4 +1,5 @@
 import axios from "axios";
+import { triggerModelWarmup } from "./warmup";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -53,6 +54,10 @@ export const detectLiveFrame = async ({ cameraName, image, mode = "standard" }) 
     };
 
     const endpoint = endpointMap[mode] || endpointMap.standard;
+    await triggerModelWarmup().catch((error) => {
+        console.error("Model warmup failed:", error);
+    });
+
     const { data } = await authApiClient.post(endpoint, {
         camera_name: cameraName,
         image,
