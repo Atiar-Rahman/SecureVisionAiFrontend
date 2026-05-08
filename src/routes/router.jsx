@@ -20,6 +20,7 @@ import ModelStatus from '../pages/dashboard/ModelStatus';
 import CameraEdit from '../pages/dashboard/CameraEdit';
 import WebcamMulti from '../pages/dashboard/WebcamMulti';
 import CNN3DDetection from '../pages/dashboard/CNN3DDetection';
+import VideoPrediction from '../pages/dashboard/VideoPrediction';
 
 const router = createBrowserRouter([
     {
@@ -85,6 +86,10 @@ const router = createBrowserRouter([
             {
                 path:'alert-show',
                 element:<AlertShow/>
+            },
+            {
+                path:'video-prediction',
+                element:<VideoPrediction/>
             },
             {
                 path:'contacts-user',

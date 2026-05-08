@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useCallback, useEffect, useState } from "react";
 import apiClient from "../services/api-client";
 
 const AuthContext = createContext();
@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Fetch user profile
-    const fetchUserProfile = async (token = authToken) => {
+    const fetchUserProfile = useCallback(async (token = authToken) => {
         if (!token) return;
         setLoading(true);
 
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [authToken]);
 
     // Login user
     // Returns true if login successful, false if failed
@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
         } else {
             setLoading(false);
         }
-    }, [authToken]);
+    }, [authToken, fetchUserProfile]);
 
     const authInfo = {
         user,

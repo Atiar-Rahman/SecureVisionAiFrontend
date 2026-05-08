@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Activity, Camera, Home, Layers3, MessageSquareText, Siren, User } from "lucide-react";
+import { Activity, Camera, Clapperboard, Home, Layers3, MessageSquareText, Siren, User } from "lucide-react";
 
 
 const MenuItems = () => {
@@ -12,6 +12,7 @@ const MenuItems = () => {
         { to: "/dashboard/contacts-user", icon: <MessageSquareText size={18} />, label: "Contact Inbox" },
         { to: "/dashboard/detect", icon: <Siren size={18} />, label: "Detection Feed" },
         { to: "/dashboard/detection", icon: <Camera size={18} />, label: "Detection Stream" },
+        { to: "/dashboard/video-prediction", icon: <Clapperboard size={18} />, label: "Video Prediction" },
         { to: "/dashboard/alert-show", icon: <Siren size={18} />, label: "Alert Center" },
         { to: "/dashboard/detection-skip", icon: <Activity size={18} />, label: "Detection Skip" },
         { to: "/dashboard/detection-3dcnn", icon: <Activity size={18} />, label: "3D CNN Detection" },

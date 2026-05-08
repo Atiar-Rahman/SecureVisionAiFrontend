@@ -63,6 +63,17 @@ const CameraList = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {cameras.map((cam) => (
                     <div key={cam.id} className="bg-base-100 shadow-md rounded-2xl p-4 border">
+                        {cam.snapshot ? (
+                            <img
+                                src={cam.snapshot}
+                                alt={`${cam.name} snapshot`}
+                                className="mb-4 h-44 w-full rounded-xl object-cover"
+                            />
+                        ) : (
+                            <div className="mb-4 flex h-44 items-center justify-center rounded-xl bg-slate-100 text-sm text-slate-500">
+                                Snapshot unavailable
+                            </div>
+                        )}
 
                         {/* Header */}
                         <div className="flex justify-between items-center mb-2">
@@ -78,6 +89,7 @@ const CameraList = () => {
                         <p className="text-sm text-gray-600">📍 {cam.location}</p>
                         <p className="text-sm text-gray-600">🎥 {cam.camera_type}</p>
                         <p className="text-sm text-gray-600">FPS: {cam.fps}</p>
+                        <p className="text-sm text-gray-600">Resolution: {cam.resolution || "N/A"}</p>
 
                         {/* AI status */}
                         <p className="text-sm mt-2">
