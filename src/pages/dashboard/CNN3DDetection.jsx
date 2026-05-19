@@ -2,6 +2,14 @@ import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import { detectLiveFrame, fetchCameraList } from "../../services/auth-api-client";
 
+const formatPercent = (value) => {
+    if (typeof value !== "number") {
+        return "Unavailable";
+    }
+
+    return `${(value * 100).toFixed(1)}%`;
+};
+
 const CNN3DDetection = () => {
     const [selectedCameras, setSelectedCameras] = useState([]);
 
@@ -64,7 +72,7 @@ const CNN3DDetection = () => {
 
             updated[r.cameraName] = r.data;
 
-            if (!r.data?.label) return;
+            if (!r.data?.sequence_ready || !r.data?.label) return;
 
             const prevLabel = lastResults[r.cameraName]?.label;
             const currentLabel = r.data.label;
@@ -147,8 +155,13 @@ const CNN3DDetection = () => {
 
             <div className="flex flex-wrap justify-center gap-5">
                 {selectedCameras.map((camName) => {
-                    const result =
-                        results[camName] || lastResults[camName];
+                    const result = results[camName];
+                    const lastReadyResult = lastResults[camName];
+                    const sequenceReady = result?.sequence_ready === true;
+                    const hasBufferedResponse = result?.sequence_ready === false;
+                    const visibleLabel = sequenceReady ? result?.label : lastReadyResult?.label;
+                    const previewFrame = result?.frame_url || lastReadyResult?.frame_url;
+                    const thresholdValue = result?.threshold ?? lastReadyResult?.threshold;
 
                     return (
                         <div key={camName} className="bg-white shadow rounded-xl p-3">
@@ -167,9 +180,9 @@ const CNN3DDetection = () => {
                                 }}
                             />
 
-                            {result?.frame_url && (
+                            {previewFrame && (
                                 <img
-                                    src={result.frame_url}
+                                    src={previewFrame}
                                     alt={`${camName} 3D CNN preview`}
                                     className="mt-3 h-40 w-full rounded-lg object-cover"
                                 />
@@ -181,17 +194,24 @@ const CNN3DDetection = () => {
                                     <p className="text-red-500">{result.error}</p>
                                 )}
 
-                                {result?.label ? (
+                                {visibleLabel ? (
                                     <div
-                                        className={`text-white p-2 rounded ${result.label === "Suspicious"
+                                        className={`text-white p-2 rounded ${visibleLabel === "Suspicious"
                                             ? "bg-red-500"
                                             : "bg-green-500"
                                             }`}
                                     >
-                                        <strong>{result.label}</strong>
-                                        <div className="text-sm">
-                                            {result.confidence}
+                                        <strong>{visibleLabel}</strong>
+                                        <div className="mt-1 text-sm space-y-1">
+                                            <div>Sequence: {sequenceReady ? "Ready" : "Buffering"}</div>
+                                            <div>Confidence: {formatPercent(result?.confidence ?? lastReadyResult?.confidence)}</div>
+                                            <div>Suspicious score: {formatPercent(result?.suspicious_score ?? lastReadyResult?.suspicious_score)}</div>
+                                            <div>Threshold: {typeof thresholdValue === "number" ? thresholdValue.toFixed(2) : "Unavailable"}</div>
                                         </div>
+                                    </div>
+                                ) : hasBufferedResponse ? (
+                                    <div className="rounded bg-amber-50 p-2 text-sm text-amber-700">
+                                        Sequence buffering...
                                     </div>
                                 ) : (
                                     <p className="text-gray-400 text-sm">
